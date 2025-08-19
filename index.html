@@ -13,7 +13,8 @@
 <script type="importmap">
 {
   "imports": {
-    "@google/genai": "https://esm.sh/@google/genai@^1.11.0"
+    "@google/genai": "https://esm.sh/@google/genai@^1.11.0",
+    "react/": "https://esm.sh/react@^19.1.1/"
   }
 }
 </script>
@@ -42,6 +43,7 @@
         <section class="practice-section">
             <div id="sentence-container">
                  <textarea id="sentence-input" placeholder="ここに評価したい英文を入力するか、下のボタンから選んでください..."></textarea>
+                 <button id="clear-sentence-btn" class="clear-btn hidden" aria-label="テキストを消去">&times;</button>
             </div>
             <div class="controls">
                 <button id="record-btn" aria-label="録音を開始" disabled>

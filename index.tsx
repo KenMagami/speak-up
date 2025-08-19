@@ -38,6 +38,7 @@ const recordBtn = document.getElementById('record-btn') as HTMLButtonElement;
 const recordBtnIcon = recordBtn.querySelector('svg') as SVGElement;
 const playModelBtn = document.getElementById('play-model-btn') as HTMLButtonElement;
 const sentenceInputEl = document.getElementById('sentence-input') as HTMLTextAreaElement;
+const clearSentenceBtn = document.getElementById('clear-sentence-btn') as HTMLButtonElement;
 const resultsSection = document.getElementById('results-section') as HTMLElement;
 const loader = document.getElementById('loader') as HTMLElement;
 const resultsContent = document.getElementById('results-content') as HTMLElement;
@@ -1749,6 +1750,7 @@ function updateButtonState() {
     const hasText = sentenceInputEl.value.trim().length > 0;
     recordBtn.disabled = !hasText;
     playModelBtn.disabled = !hasText;
+    clearSentenceBtn.classList.toggle('hidden', !hasText);
 }
 
 // --- Sentence Modal Logic ---
@@ -1901,6 +1903,13 @@ function initializeMainApp() {
     playModelBtn.addEventListener('click', playModelAudio);
     sentenceInputEl.addEventListener('input', updateButtonState);
     sentenceInputEl.addEventListener('input', autoResizeTextarea);
+    
+    clearSentenceBtn.addEventListener('click', () => {
+        sentenceInputEl.value = '';
+        sentenceInputEl.focus();
+        sentenceInputEl.dispatchEvent(new Event('input'));
+    });
+
     selectSentenceBtn.addEventListener('click', openModal);
     closeModalBtn.addEventListener('click', closeModal);
     sentenceModal.addEventListener('click', (e) => {

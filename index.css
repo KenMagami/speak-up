@@ -103,13 +103,14 @@ body {
     position: relative; /* For user profile positioning */
 }
 
-h1, h2, h3 {
+h1, h2, h3, h4 {
     font-family: var(--font-jp), 'Roboto', sans-serif;
     font-weight: 700;
 }
 
 .app-header {
     text-align: center;
+    padding-top: 2rem; /* Add padding to make space for user profile */
 }
 
 .app-header h1 {
@@ -128,8 +129,8 @@ h1, h2, h3 {
 /* User Profile */
 #user-profile {
     position: absolute;
-    top: 1rem;
-    right: 1rem;
+    top: 1.5rem; /* Adjusted from 1rem */
+    right: 1.5rem; /* Adjusted from 1rem */
     display: flex;
     align-items: center;
     gap: 0.75rem;
@@ -139,6 +140,12 @@ h1, h2, h3 {
     border: 1px solid var(--border-color);
     font-size: 0.9rem;
     z-index: 10;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#user-profile:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 #user-name {
@@ -149,7 +156,6 @@ h1, h2, h3 {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    order: 1; /* Puts avatar after name */
 }
 
 #signout-btn {
@@ -159,13 +165,85 @@ h1, h2, h3 {
     cursor: pointer;
     font-size: 0.9rem;
     transition: color 0.2s;
-    margin-left: 0.5rem;
-    order: 2;
     padding: 0.25rem;
 }
 
 #signout-btn:hover {
     color: var(--text-color);
+}
+
+#admin-link {
+    color: var(--text-light-color);
+    text-decoration: none;
+    font-weight: 500;
+    margin-right: 0.5rem;
+    transition: color 0.2s;
+    font-size: 0.9rem;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid transparent;
+    border-radius: 6px;
+}
+
+#admin-link:hover {
+    color: var(--text-color);
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: var(--border-color);
+}
+
+/* Assignments Section */
+.assignments-section {
+    border-top: 1px solid var(--border-color);
+    padding-top: 1.5rem;
+}
+
+.assignments-section h2 {
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+
+#assignments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.assignment-item {
+    background-color: var(--card-bg-solid);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.assignment-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: var(--gradient-1);
+    transform: translateY(-2px);
+}
+
+.assignment-item h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--text-color);
+}
+
+.assignment-item p {
+    margin: 0.25rem 0 0;
+    color: var(--text-light-color);
+    font-size: 0.9rem;
+}
+
+.assignment-item.loading {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-light-color);
+    cursor: default;
+}
+.assignment-item.loading:hover {
+    transform: none;
+    border-color: var(--border-color);
 }
 
 
@@ -176,6 +254,13 @@ h1, h2, h3 {
     display: flex;
     flex-direction: column;
 }
+
+.practice-section h2 {
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+
 
 #sentence-container {
     position: relative;
@@ -272,7 +357,7 @@ h1, h2, h3 {
 }
 
 
-#record-btn.recording {
+#record-btn.recording, #test-record-btn.recording {
     background-color: var(--score-low);
     animation: pulse 1.5s infinite;
 }
@@ -288,9 +373,15 @@ h1, h2, h3 {
 }
 
 /* Sentence Select Button */
-.select-sentence-btn {
+.main-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
     margin-top: 1rem;
-    padding: 0.75rem 1rem;
+}
+
+.select-sentence-btn {
+    padding: 0.75rem 1.25rem;
     background-color: transparent;
     border: 1px solid var(--border-color);
     color: var(--text-light-color);
@@ -298,7 +389,6 @@ h1, h2, h3 {
     cursor: pointer;
     transition: all 0.2s ease-in-out;
     font-size: 0.9rem;
-    align-self: center;
 }
 
 .select-sentence-btn:hover {
@@ -306,6 +396,47 @@ h1, h2, h3 {
     color: var(--text-color);
     border-color: var(--gradient-1);
 }
+
+.select-sentence-btn.danger {
+    border-color: var(--score-low);
+    color: var(--score-low);
+}
+
+.select-sentence-btn.danger:hover {
+    background-color: rgba(231, 76, 60, 0.1);
+    color: #f67b6d;
+}
+
+/* Test Mode Section */
+#test-section {
+    align-items: center;
+}
+.test-header {
+    text-align: center;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+.test-header h3 { margin: 0; font-size: 1.5rem; }
+#test-progress { margin: 0.25rem 0 0; color: var(--text-light-color); }
+.test-sentence-box {
+    width: 100%;
+    background-color: rgba(0,0,0,0.2);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    font-size: 1.25rem;
+    line-height: 1.7;
+    min-height: 120px;
+    max-height: 250px;
+    overflow-y: auto;
+}
+.test-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
 
 /* Results Section */
 #results-section {
@@ -461,7 +592,7 @@ h1, h2, h3 {
     font-size: 1.2rem;
 }
 
-#close-modal-btn {
+.modal-close-btn {
     background: none;
     border: none;
     font-size: 2rem;
@@ -471,7 +602,7 @@ h1, h2, h3 {
     transition: color 0.2s;
 }
 
-#close-modal-btn:hover {
+.modal-close-btn:hover {
     color: var(--text-color);
 }
 
@@ -516,7 +647,7 @@ h1, h2, h3 {
 
 .modal-body {
     overflow-y: auto;
-    padding-right: 1rem; /* for scrollbar */
+    padding: 1rem 0.5rem;
 }
 
 /* Scrollbar styling for modal */
@@ -615,6 +746,162 @@ h1, h2, h3 {
     text-align: center;
     color: var(--text-light-color);
     font-style: italic;
+}
+
+/* Test Setup Modal Specifics */
+.test-selection-list { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; }
+.test-selection-item { display: block; }
+.test-selection-item input { display: none; }
+.test-selection-item label {
+    display: block;
+    padding: 0.75rem 1.25rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.test-selection-item label:hover { background-color: rgba(255, 255, 255, 0.1); }
+.test-selection-item input:checked + label {
+    background-color: var(--card-bg-solid);
+    border-color: var(--gradient-1);
+    color: var(--text-color);
+    font-weight: 500;
+}
+.question-count-container { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem; }
+.question-count-input {
+    background-color: rgba(0,0,0,0.2);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 0.5rem;
+    border-radius: 6px;
+    width: 60px;
+    font-size: 1rem;
+}
+.modal-action-btn {
+    width: 100%;
+    padding: 0.8rem;
+    font-size: 1rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background-image: linear-gradient(135deg, var(--gradient-1), var(--gradient-2));
+    color: white;
+    transition: transform 0.2s;
+}
+.modal-action-btn:hover { transform: scale(1.02); }
+.modal-action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Test Summary Modal */
+.summary-intro { text-align: center; color: var(--text-light-color); margin-bottom: 1.5rem; }
+.summary-score-value {
+    font-size: 2rem;
+    font-weight: 700;
+    text-align: center;
+    margin: 0.5rem 0 0 0;
+    background: linear-gradient(90deg, var(--gradient-1), var(--gradient-2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Profile Modal Specifics */
+.form-group {
+    margin-bottom: 1.25rem;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-light-color);
+}
+.form-group input[type="number"] {
+    width: 100%;
+    background-color: rgba(0,0,0,0.2);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    -moz-appearance: textfield;
+}
+.form-group input[type="number"]:focus {
+    outline: none;
+    border-color: var(--gradient-1);
+}
+.role-selector {
+    display: flex;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+}
+.role-selector input[type="radio"] {
+    display: none;
+}
+.role-selector label {
+    flex: 1;
+    text-align: center;
+    padding: 0.75rem;
+    margin: 0;
+    cursor: pointer;
+    color: var(--text-light-color);
+    transition: background-color 0.2s, color 0.2s;
+    position: relative;
+}
+.role-selector label:not(:last-child) {
+    border-right: 1px solid var(--border-color);
+}
+.role-selector input[type="radio"]:checked + label {
+    background-image: linear-gradient(135deg, var(--gradient-1), var(--gradient-2));
+    color: white;
+    font-weight: 500;
+}
+
+.modal-footer {
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    text-align: right;
+    margin: 0 -1.5rem -1.5rem;
+    padding: 1rem 1.5rem;
+}
+.button-primary {
+    padding: 0.7rem 1.2rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background-image: linear-gradient(135deg, var(--gradient-1), var(--gradient-2));
+    color: white;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.button-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+/* Toast Notification */
+.toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--card-bg-solid);
+    color: var(--text-color);
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+    z-index: 2000;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
 }
 
 

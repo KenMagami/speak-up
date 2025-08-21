@@ -1,0 +1,250 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speak up! - 管理画面</title>
+    <link rel="stylesheet" href="admin.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://esm.sh/@google/genai@^1.11.0",
+    "react/": "https://esm.sh/react@^19.1.1/",
+    "firebase/": "https://esm.sh/firebase@^12.1.0/"
+  }
+}
+</script>
+</head>
+<body>
+    <div id="login-screen">
+        <div class="login-box">
+            <h1>Speak up!</h1>
+            <p class="description">管理者用ページ</p>
+            <div id="google-signin-button"></div>
+            <p class="login-note">先生として登録されたアカウントでログインしてください。</p>
+        </div>
+    </div>
+
+    <div id="admin-app" class="hidden">
+        <aside id="sidebar">
+            <div class="sidebar-header">
+                <h2>Speak up!</h2>
+                <span>管理画面</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-link active" data-view="dashboard">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+                    <span>ダッシュボード</span>
+                </a>
+                <a href="#" class="nav-link" data-view="assignments">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+                    <span>課題管理</span>
+                </a>
+                <a href="#" class="nav-link" data-view="results">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6h-6z"/></svg>
+                    <span>成績閲覧</span>
+                </a>
+                <a href="#" class="nav-link" data-view="users">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                    <span>ユーザー管理</span>
+                </a>
+            </nav>
+            <div id="user-profile" class="sidebar-footer">
+                <img id="user-avatar" src="" alt="User Avatar">
+                <div class="user-info">
+                    <span id="user-name"></span>
+                    <span id="user-email"></span>
+                </div>
+                <button id="signout-btn" aria-label="サインアウト">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+                </button>
+            </div>
+        </aside>
+
+        <main id="main-content">
+            <!-- Dashboard View -->
+            <section id="dashboard-view" class="content-view active">
+                <div class="view-header">
+                    <h1>ダッシュボード</h1>
+                </div>
+                <div class="view-body">
+                    <div class="card">
+                        <h2>ようこそ、管理画面へ</h2>
+                        <p>左のメニューから課題の作成や、生徒の成績確認を行ってください。</p>
+                        <p>このページは現在準備中です。</p>
+                        <a href="index.html" class="button-secondary">生徒用ページに戻る</a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Assignments View -->
+            <section id="assignments-view" class="content-view">
+                <div class="view-header">
+                    <h1>課題管理</h1>
+                    <button id="create-assignment-btn" class="button-primary">新規課題を作成</button>
+                </div>
+                <div class="view-body">
+                    <div class="card">
+                        <table id="assignments-table">
+                            <thead>
+                                <tr>
+                                    <th>課題タイトル</th>
+                                    <th>説明</th>
+                                    <th>対象クラス</th>
+                                    <th>問題数</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data will be populated by JS -->
+                            </tbody>
+                        </table>
+                        <div id="assignments-loader" class="loader">読み込み中...</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results View -->
+            <section id="results-view" class="content-view">
+                <div class="view-header">
+                    <h1>成績閲覧</h1>
+                    <button id="csv-download-btn" class="button-secondary">CSVダウンロード</button>
+                </div>
+                <div class="view-body">
+                    <div class="card">
+                        <div class="filter-container">
+                            <label for="assignment-filter">課題:</label>
+                            <select id="assignment-filter"></select>
+                            <label for="class-filter">クラス:</label>
+                            <select id="class-filter"></select>
+                        </div>
+                        <table id="results-table">
+                            <thead>
+                                <tr>
+                                    <th data-sort-key="completedAt">提出日時 <span></span></th>
+                                    <th data-sort-key="studentGrade">学年 <span></span></th>
+                                    <th data-sort-key="studentClass">クラス <span></span></th>
+                                    <th data-sort-key="studentNumber">番号 <span></span></th>
+                                    <th data-sort-key="studentName">生徒名 <span></span></th>
+                                    <th data-sort-key="testTitle">課題タイトル <span></span></th>
+                                    <th data-sort-key="pronunciation">発音 <span></span></th>
+                                    <th data-sort-key="fluency">流暢さ <span></span></th>
+                                    <th data-sort-key="intonation">イントネーション <span></span></th>
+                                    <th data-sort-key="total">総合 <span></span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data will be populated by JS -->
+                            </tbody>
+                        </table>
+                        <div id="results-loader" class="loader">読み込み中...</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Users View -->
+            <section id="users-view" class="content-view">
+                <div class="view-header">
+                    <h1>ユーザー管理</h1>
+                </div>
+                <div class="view-body">
+                    <div class="card">
+                        <table id="users-table">
+                            <thead>
+                                <tr>
+                                    <th>名前</th>
+                                    <th>メールアドレス</th>
+                                    <th>役割</th>
+                                    <th>学年</th>
+                                    <th>クラス</th>
+                                    <th>番号</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data will be populated by JS -->
+                            </tbody>
+                        </table>
+                        <div id="users-loader" class="loader">読み込み中...</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Create/Edit Assignment Modal -->
+    <div id="assignment-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">新規課題の作成</h3>
+                <button id="close-modal-btn" aria-label="閉じる">&times;</button>
+            </div>
+            <form id="assignment-form">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="assignment-title">課題タイトル</label>
+                        <input type="text" id="assignment-title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="assignment-description">説明</label>
+                        <textarea id="assignment-description" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>対象クラス (1つ以上選択)</label>
+                        <div class="checkbox-list" id="assignment-class-selection">
+                             <!-- Class checkboxes will be populated here -->
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>問題を選択</label>
+                        <div class="sentence-selection-container" id="sentence-selection-container">
+                            <!-- Sentences will be populated here -->
+                            <div class="loader">例文データを読み込んでいます...</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" id="save-assignment-btn" class="button-primary">作成する</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- CSV Download Modal -->
+    <div id="csv-modal" class="modal hidden">
+        <div class="modal-content" style="max-width: 600px;">
+             <div class="modal-header">
+                <h3>CSVダウンロード</h3>
+                <button id="close-csv-modal-btn" aria-label="閉じる">&times;</button>
+            </div>
+            <form id="csv-form">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>対象クラスを選択 (複数可)</label>
+                        <div id="csv-class-selection" class="checkbox-list">
+                            <!-- Class checkboxes will be populated here -->
+                        </div>
+                    </div>
+                     <div class="form-group">
+                        <label>対象課題を選択 (複数可)</label>
+                        <div id="csv-assignment-selection" class="checkbox-list">
+                            <!-- Assignment checkboxes will be populated here -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" id="execute-csv-download-btn" class="button-primary">ダウンロード</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="toast-notification" class="toast hidden"></div>
+
+    <script type="module" src="admin.tsx"></script>
+</body>
+</html>

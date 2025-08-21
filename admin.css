@@ -1,0 +1,591 @@
+/* Basic Reset & Font */
+:root {
+    --bg-color: #1A1C2C;
+    --card-bg-color: rgba(36, 39, 61, 0.5);
+    --card-bg-solid: #24273D;
+    --sidebar-bg: #1e2032;
+    --text-color: #F0F0F0;
+    --text-light-color: #A0A3B1;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+
+    --gradient-1: #9b59b6;
+    --gradient-2: #e94e77;
+
+    --score-high: #2ecc71;
+    --score-medium: #f1c40f;
+    --score-low: #e74c3c;
+    
+    --font-jp: 'Noto Sans JP', sans-serif;
+}
+html {
+    background-color: var(--bg-color);
+    background-image: 
+        radial-gradient(circle at 15% 50%, rgba(155, 89, 182, 0.2), transparent 40%),
+        radial-gradient(circle at 85% 30%, rgba(233, 78, 119, 0.2), transparent 40%);
+    background-attachment: fixed;
+}
+
+body {
+    font-family: 'Roboto', var(--font-jp), sans-serif;
+    color: var(--text-color);
+    margin: 0;
+    min-height: 100vh;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.hidden { display: none !important; }
+
+/* Login Screen */
+#login-screen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100vh;
+}
+.login-box {
+    width: 100%;
+    max-width: 450px;
+    background: var(--card-bg-color);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 3rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
+    text-align: center;
+}
+.login-box h1 {
+    font-size: 2.5rem;
+    background: linear-gradient(90deg, var(--gradient-1), var(--gradient-2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0;
+}
+.login-box .description {
+    color: var(--text-light-color);
+    margin: 0.5rem 0 0 0;
+    font-size: 1.2rem;
+}
+#google-signin-button {
+    display: flex;
+    justify-content: center;
+    margin: 2rem 0;
+}
+.login-note {
+    font-size: 0.9rem;
+    color: var(--text-light-color);
+}
+
+/* Admin App Layout */
+#admin-app {
+    display: flex;
+    height: 100vh;
+}
+
+#sidebar {
+    width: 260px;
+    background-color: var(--sidebar-bg);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem 1rem;
+    box-sizing: border-box;
+}
+
+.sidebar-header {
+    padding: 0 0.5rem 1.5rem 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 1rem;
+}
+.sidebar-header h2 {
+    font-size: 1.8rem;
+    margin: 0;
+    background: linear-gradient(90deg, var(--gradient-1), var(--gradient-2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.sidebar-header span {
+    color: var(--text-light-color);
+    font-size: 0.9rem;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex-grow: 1;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text-light-color);
+    transition: background-color 0.2s, color 0.2s;
+}
+.nav-link:hover {
+    background-color: var(--card-bg-solid);
+    color: var(--text-color);
+}
+.nav-link.active {
+    background-color: var(--gradient-1);
+    color: white;
+    font-weight: 500;
+}
+
+.sidebar-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+.sidebar-footer img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+.user-info {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow: hidden;
+}
+#user-name {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+#user-email {
+    font-size: 0.8rem;
+    color: var(--text-light-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+#signout-btn {
+    background: none;
+    border: none;
+    color: var(--text-light-color);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: background-color 0.2s, color 0.2s;
+}
+#signout-btn:hover {
+    background-color: var(--card-bg-solid);
+    color: var(--text-color);
+}
+
+/* Main Content */
+#main-content {
+    flex-grow: 1;
+    padding: 2rem 3rem;
+    overflow-y: auto;
+}
+
+.content-view { display: none; }
+.content-view.active { display: block; }
+
+.view-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1rem;
+}
+.view-header h1 {
+    margin: 0;
+    font-size: 2rem;
+}
+
+.card {
+    background: var(--card-bg-solid);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+/* Buttons */
+.button-primary {
+    padding: 0.7rem 1.2rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background-image: linear-gradient(135deg, var(--gradient-1), var(--gradient-2));
+    color: white;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.button-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+.button-secondary {
+    padding: 0.5rem 1rem; /* smaller padding */
+    font-size: 0.9rem;
+    font-weight: 500;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    background-color: transparent;
+    color: var(--text-light-color);
+    transition: background-color 0.2s, color 0.2s;
+    text-decoration: none;
+}
+.button-secondary:hover {
+    background-color: var(--card-bg-color);
+    color: var(--text-color);
+}
+
+.button-danger {
+    border-color: var(--score-low);
+    color: var(--score-low);
+}
+
+.button-danger:hover {
+    background-color: rgba(231, 76, 60, 0.1);
+    color: #f67b6d;
+}
+
+
+/* Table Styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+th, td {
+    padding: 0.8rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+thead th {
+    color: var(--text-light-color);
+    font-weight: 500;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    position: relative;
+}
+th[data-sort-key] {
+    cursor: pointer;
+}
+th[data-sort-key]:hover {
+    color: var(--text-color);
+}
+th span {
+    font-size: 1.2em;
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+tbody tr:hover {
+    background-color: var(--card-bg-color);
+}
+td {
+    font-size: 0.95rem;
+}
+.actions-cell {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.loader {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-light-color);
+}
+
+/* Filter container */
+.filter-container {
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.filter-container label {
+    font-weight: 500;
+    color: var(--text-light-color);
+}
+#assignment-filter, #class-filter {
+    background-color: var(--card-bg-solid);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    min-width: 200px;
+}
+
+/* Modal */
+.modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(5px);
+}
+.modal-content {
+    background: var(--sidebar-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+.modal-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.modal-header h3 { margin: 0; }
+#close-modal-btn, #close-csv-modal-btn {
+    background: none; border: none; font-size: 2rem;
+    color: var(--text-light-color); cursor: pointer; line-height: 1;
+}
+
+/* This structure makes the modal body scrollable within the flex container */
+#assignment-form {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    min-height: 0; /* Important for flex-shrink to work correctly */
+}
+.modal-body { 
+    padding: 1.5rem; 
+    overflow-y: auto; 
+    flex-grow: 1;
+}
+
+.modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border-color);
+    text-align: right;
+}
+
+/* Form Group */
+.form-group { margin-bottom: 1.25rem; }
+.form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: var(--text-light-color); }
+.form-group input, .form-group textarea {
+    width: 100%;
+    background-color: var(--card-bg-solid);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.form-group input:focus, .form-group textarea:focus {
+    outline: none;
+    border-color: var(--gradient-1);
+    box-shadow: 0 0 0 2px rgba(155, 89, 182, 0.3);
+}
+.form-group textarea { resize: vertical; }
+
+.sentence-selection-container {
+    display: flex;
+    flex-direction: column;
+}
+.checkbox-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.modal-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 1rem;
+}
+.modal-tab-btn {
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: var(--text-light-color);
+    font-size: 1rem;
+    position: relative;
+    top: 1px;
+    border-bottom: 3px solid transparent;
+}
+.modal-tab-btn:hover { color: var(--text-color); }
+.modal-tab-btn.active {
+    color: var(--text-color);
+    font-weight: 500;
+    border-bottom-color: var(--gradient-1);
+}
+.modal-tab-content { display: none; }
+.modal-tab-content.active { display: block; }
+
+.sentence-group > h4 {
+    font-size: 1.2rem;
+    margin: 1.5rem 0 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.chapter-header, .lesson-header, .section-header {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    cursor: pointer;
+    padding: 0.8rem 1rem;
+    width: 100%;
+    text-align: left;
+    border-radius: 8px;
+    margin-top: 0.5rem;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+}
+.chapter-header:hover, .lesson-header:hover, .section-header:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+.chapter-header::after, .lesson-header::after, .section-header::after {
+    content: '▼';
+    font-size: 0.8em;
+    transition: transform 0.2s;
+    margin-left: auto;
+}
+.chapter-header.expanded::after, .lesson-header.expanded::after, .section-header.expanded::after {
+    transform: rotate(180deg);
+}
+
+.chapter-header label, .lesson-header label, .section-header label {
+    font-weight: 500;
+    cursor: pointer;
+    flex-grow: 1;
+    margin-left: 0.75rem;
+    text-align: left; /* Ensures text is left-aligned */
+}
+
+.chapter-header label span, .lesson-header label span, .section-header label span {
+    display: inline-block;
+    word-break: break-word;
+}
+
+.nested-list {
+    padding: 0;
+    margin: 0;
+}
+
+
+/* --- Checkbox and Sentence Item Styling Refactor --- */
+
+/* Style for non-indented checkbox items (used in CSV modal and assignment class selection) */
+.checkbox-item-label {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    justify-content: flex-start !important;
+    width: fit-content;
+}
+
+.checkbox-item-label input[type="checkbox"] {
+    margin: 0 !important;
+    align-self: center !important;
+}
+
+.checkbox-item-label span {
+    flex: none !important;
+    margin-left: 0 !important;
+    text-align: left !important;
+}
+
+/* Style for indented sentence items (used in assignment question selection) */
+.sentence-item-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0.75rem; /* Standard padding */
+    cursor: pointer;
+    transition: background-color 0.2s;
+    user-select: none;
+    -webkit-user-select: none;
+    border-bottom: 1px solid var(--border-color);
+    margin-left: 1.5rem; /* Indentation for nesting */
+}
+
+.checkbox-list > .checkbox-item-label:last-child,
+.nested-list > .sentence-item-label:last-child {
+    border-bottom: none;
+}
+
+.sentence-item-label:hover, .checkbox-item-label:hover { 
+    background-color: var(--card-bg-color); 
+}
+
+/* Combined rule to ensure text next to checkbox wraps correctly */
+.sentence-item-label span,
+.checkbox-item-label span {
+    line-height: 1.5;
+    word-break: break-word;
+    flex-grow: 1; /* Allow span to take up space and wrap its text */
+}
+
+.sentence-selection-container input[type="checkbox"] {
+    width: 1.1em;
+    height: 1.1em;
+    cursor: pointer;
+    accent-color: var(--gradient-1);
+}
+
+#myway-list .section-header {
+    margin-left: 1.5rem;
+    width: calc(100% - 1.5rem);
+}
+#myway-list .section-header + .nested-list .sentence-item-label {
+    margin-left: 3rem;
+}
+
+
+/* Toast Notification */
+.toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px); /* Start off-screen */
+    background-color: var(--card-bg-solid);
+    color: var(--text-color);
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+    z-index: 2000;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+}
+.toast.show { 
+    opacity: 1; 
+    transform: translateX(-50%) translateY(0); 
+}
+
+.toast.error {
+    background-color: #5e2c28;
+    border-color: var(--score-low);
+}

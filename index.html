@@ -15,7 +15,10 @@
   "imports": {
     "@google/genai": "https://esm.sh/@google/genai@^1.11.0",
     "react/": "https://esm.sh/react@^19.1.1/",
-    "firebase/": "https://esm.sh/firebase@^12.1.0/"
+    "firebase/": "https://esm.sh/firebase@^12.1.0/",
+    "path": "https://esm.sh/path@^0.12.7",
+    "vite": "https://esm.sh/vite@^7.1.3",
+    "process": "https://esm.sh/process@^0.11.10"
   }
 }
 </script>
@@ -43,9 +46,10 @@
         </header>
 
         <section id="assignments-section" class="assignments-section hidden">
-            <h2>先生からの課題</h2>
-            <div id="assignments-list">
-                <!-- Assignments will be populated here -->
+            <div id="open-assignments-btn" class="card-link">
+                <h2>先生からの課題</h2>
+                <p>クリックして課題一覧を表示</p>
+                <span id="new-assignments-badge" class="badge hidden"></span>
             </div>
         </section>
         
@@ -264,6 +268,50 @@
                     <button type="submit" id="save-profile-btn" class="button-primary">登録する</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Assignment Details Modal -->
+    <div id="assignment-details-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>先生からの課題</h3>
+                <button id="close-assignment-details-modal-btn" class="modal-close-btn" aria-label="閉じる">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h4>未完了の課題</h4>
+                <div id="incomplete-assignments-list" class="assignments-list-modal"></div>
+                <hr class="modal-divider">
+                <h4>完了済みの課題</h4>
+                <div id="completed-assignments-list" class="assignments-list-modal"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Result Details Modal -->
+    <div id="result-details-modal" class="modal hidden">
+        <div class="modal-content" style="max-width: 500px;">
+             <div class="modal-header">
+                <h3 id="result-modal-title">テスト結果</h3>
+                <button id="close-result-details-modal-btn" class="modal-close-btn" aria-label="閉じる">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="result-modal-date" class="summary-intro"></p>
+                <div class="scores-grid">
+                     <div class="score-card">
+                        <h3>Pronunciation</h3>
+                        <p id="result-pronunciation" class="summary-score-value">0/10</p>
+                    </div>
+                     <div class="score-card">
+                        <h3>Fluency</h3>
+                        <p id="result-fluency" class="summary-score-value">0/10</p>
+                    </div>
+                     <div class="score-card">
+                        <h3>Intonation</h3>
+                        <p id="result-intonation" class="summary-score-value">0/10</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 

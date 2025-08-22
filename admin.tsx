@@ -1,5 +1,6 @@
 
 
+
 import { db, auth } from "./firebase";
 import { factbookContentData, myWayContentData } from "./data";
 
@@ -20,6 +21,7 @@ interface Assignment {
     description: string;
     questions: string[];
     assignedClasses?: string[];
+    retakePolicy?: 'once' | 'multiple';
 }
 
 interface TestResult {
@@ -40,6 +42,9 @@ interface TestResult {
 
 
 declare global {
+  interface ImportMetaEnv {
+    readonly VITE_GOOGLE_CLIENT_ID: string;
+  }
   interface Window {
     google: any;
     onGoogleLibraryLoad: () => void;
@@ -483,6 +488,9 @@ async function openAssignmentModal(assignmentId: string | null = null, data?: Om
         assignmentTitleInput.value = data.title;
         assignmentDescriptionInput.value = data.description;
         
+        const policy = data.retakePolicy || 'once';
+        (assignmentForm.querySelector(`input[name="retake-policy"][value="${policy}"]`) as HTMLInputElement).checked = true;
+
         // Check assigned classes
         const assignedClasses = new Set(data.assignedClasses || []);
         assignmentClassSelection.querySelectorAll<HTMLInputElement>('input[type="checkbox"]').forEach(cb => {
@@ -503,6 +511,7 @@ async function openAssignmentModal(assignmentId: string | null = null, data?: Om
         editingAssignmentId = null;
         modalTitle.textContent = '新規課題の作成';
         saveAssignmentBtn.textContent = '作成する';
+        (assignmentForm.querySelector(`input[name="retake-policy"][value="once"]`) as HTMLInputElement).checked = true;
     }
     assignmentModal.classList.remove('hidden');
 }
@@ -643,6 +652,7 @@ async function handleSaveAssignment(event: SubmitEvent) {
     const title = assignmentTitleInput.value.trim();
     const description = assignmentDescriptionInput.value.trim();
     const assignedClasses = Array.from(assignmentClassSelection.querySelectorAll<HTMLInputElement>('input:checked')).map(cb => cb.value);
+    const retakePolicy = (assignmentForm.querySelector('input[name="retake-policy"]:checked') as HTMLInputElement).value as 'once' | 'multiple';
     const questions = Array.from(sentenceSelectionContainer.querySelectorAll<HTMLInputElement>('input[type="checkbox"]'))
         .filter(cb => cb.checked && !cb.closest('.chapter-header, .lesson-header, .section-header'))
         .map(i => i.value);
@@ -660,7 +670,7 @@ async function handleSaveAssignment(event: SubmitEvent) {
         return;
     }
 
-    const data = { title, description, questions, assignedClasses, updatedAt: new Date().toISOString() };
+    const data = { title, description, questions, assignedClasses, retakePolicy, updatedAt: new Date().toISOString() };
 
     try {
         if (editingAssignmentId) {
@@ -738,65 +748,79 @@ async function populateCsvAssignmentSelection() {
     });
 }
 
-function handleCsvDownload(event: SubmitEvent) {
+async function handleCsvDownload(event: SubmitEvent) {
     event.preventDefault();
 
     const selectedClasses = Array.from(csvClassSelection.querySelectorAll<HTMLInputElement>('input:checked')).map(cb => cb.value);
     const selectedAssignments = Array.from(csvAssignmentSelection.querySelectorAll<HTMLInputElement>('input:checked')).map(cb => cb.value);
     
     if (selectedClasses.length === 0 || selectedAssignments.length === 0) {
-        alert('少なくとも1つのクラスと1つの課題を選択してください。');
+        showToast('少なくとも1つのクラスと1つの課題を選択してください。', 'error');
         return;
     }
 
-    let filteredData = allResultsData.filter(result => {
-        const userClass = `${result.studentGrade}-${result.studentClass}`;
-        return selectedClasses.includes(userClass) && selectedAssignments.includes(result.testTitle);
-    });
+    try {
+        const [usersSnapshot, resultsSnapshot] = await Promise.all([
+            db.collection('users').get(),
+            db.collection('testResults').get()
+        ]);
+        
+        const allUsers = usersSnapshot.docs.map(doc => ({ email: doc.id, ...doc.data() })) as (UserProfile & {email: string})[];
+        const allResults = resultsSnapshot.docs.map(doc => doc.data()) as TestResult[];
 
-    if (filteredData.length === 0) {
-        alert('選択された条件に一致する成績データがありません。');
-        return;
-    }
+        const targetStudents = allUsers
+            .filter(user => {
+                if (user.role !== 'student' || !user.grade || !user.class) return false;
+                const userClass = `${user.grade}-${user.class}`;
+                return selectedClasses.includes(userClass);
+            })
+            .sort((a, b) => (a.studentNumber || 99) - (b.studentNumber || 99));
 
-    const headers = ['提出日時', '学年', 'クラス', '番号', '生徒名', 'メールアドレス', '課題', '発音', '流暢さ', 'イントネーション', '総合点'];
-    const csvContent = [
-        headers.join(','),
-        ...filteredData.map(d => {
-            const p = d.scores.pronunciation || 0;
-            const f = d.scores.fluency || 0;
-            const i = d.scores.intonation || 0;
-            const total = p + f + i;
-            return [
-                `"${new Date(d.completedAt).toLocaleString('ja-JP')}"`,
-                d.studentGrade || '',
-                d.studentClass || '',
-                d.studentNumber || '',
-                `"${d.studentName}"`,
-                d.studentEmail,
-                `"${d.testTitle}"`,
-                p.toFixed(1),
-                f.toFixed(1),
-                i.toFixed(1),
-                total.toFixed(1)
-            ].join(',');
-        })
-    ].join('\n');
+        if (targetStudents.length === 0) {
+            showToast('選択されたクラスに生徒が見つかりません。', 'error');
+            return;
+        }
 
-    const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
-    const blob = new Blob([bom, csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement("a");
-    if (link.download !== undefined) {
+        const resultsMap = new Map<string, number>(); // key: 'email|testTitle', value: totalScore
+        allResults.forEach(r => {
+            const totalScore = (r.scores.pronunciation || 0) + (r.scores.fluency || 0) + (r.scores.intonation || 0);
+            resultsMap.set(`${r.studentEmail}|${r.testTitle}`, parseFloat(totalScore.toFixed(1)));
+        });
+
+        const headers = ['生徒名', '学年', 'クラス', '番号', ...selectedAssignments.map(title => `"${title}"`)];
+        const rows = targetStudents.map(student => {
+            const rowData = [
+                `"${student.name}"`,
+                student.grade,
+                student.class,
+                student.studentNumber
+            ];
+            selectedAssignments.forEach(assignmentTitle => {
+                const score = resultsMap.get(`${student.email}|${assignmentTitle}`);
+                rowData.push(score !== undefined ? score.toString() : '');
+            });
+            return rowData.join(',');
+        });
+
+        const csvContent = [headers.join(','), ...rows].join('\n');
+
+        const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+        const blob = new Blob([bom, csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
         const url = URL.createObjectURL(blob);
         link.setAttribute("href", url);
         const timestamp = new Date().toISOString().slice(0, 16).replace(/[-T:]/g, '');
-        link.setAttribute("download", `speakup_grades_${timestamp}.csv`);
-        link.style.visibility = 'hidden';
+        link.setAttribute("download", `speakup_grades_pivot_${timestamp}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        closeCsvModal();
+        showToast('CSVをダウンロードしました。');
+
+    } catch (error) {
+        console.error("Error generating CSV:", error);
+        showToast('CSVの生成に失敗しました。', 'error');
     }
-    closeCsvModal();
 }
 
 // --- Event Listeners ---

@@ -4,22 +4,18 @@ import { db } from "./firebase"; // Import the initialized db instance
 import { factbookContentData, myWayContentData } from "./data";
 
 // --- Type Declarations ---
-interface ImportMetaEnv {
-  readonly VITE_API_KEY: string;
-  readonly VITE_GOOGLE_CLIENT_ID: string;
-  // Firebase Environment Variables
-  readonly VITE_FIREBASE_API_KEY: string;
-  readonly VITE_FIREBASE_AUTH_DOMAIN: string;
-  readonly VITE_FIREBASE_PROJECT_ID: string;
-  readonly VITE_FIREBASE_STORAGE_BUCKET: string;
-  readonly VITE_FIREBASE_MESSAGING_SENDER_ID: string;
-  readonly VITE_FIREBASE_APP_ID: string;
-}
-
 declare global {
-  interface ImportMeta {
-    readonly env: ImportMetaEnv;
+  interface ImportMetaEnv {
+    readonly VITE_GOOGLE_CLIENT_ID: string;
+    // Firebase Environment Variables
+    readonly VITE_FIREBASE_API_KEY: string;
+    readonly VITE_FIREBASE_AUTH_DOMAIN: string;
+    readonly VITE_FIREBASE_PROJECT_ID: string;
+    readonly VITE_FIREBASE_STORAGE_BUCKET: string;
+    readonly VITE_FIREBASE_MESSAGING_SENDER_ID: string;
+    readonly VITE_FIREBASE_APP_ID: string;
   }
+
   interface Window {
     google: any;
     onGoogleLibraryLoad: () => void;
@@ -69,6 +65,20 @@ interface Assignment {
     description: string;
     questions: string[];
     assignedClasses?: string[];
+    retakePolicy?: 'once' | 'multiple';
+    updatedAt?: string;
+}
+
+interface TestResultFromDB {
+    studentEmail: string;
+    studentName: string;
+    testTitle: string;
+    completedAt: string;
+    scores: {
+        pronunciation: number;
+        fluency: number;
+        intonation: number;
+    };
 }
 
 
@@ -87,7 +97,23 @@ const adminLink = document.getElementById('admin-link') as HTMLAnchorElement;
 
 // Assignments Section
 const assignmentsSection = document.getElementById('assignments-section') as HTMLElement;
-const assignmentsList = document.getElementById('assignments-list') as HTMLDivElement;
+const openAssignmentsBtn = document.getElementById('open-assignments-btn') as HTMLDivElement;
+const newAssignmentsBadge = document.getElementById('new-assignments-badge') as HTMLSpanElement;
+
+// Assignment Details Modal
+const assignmentDetailsModal = document.getElementById('assignment-details-modal') as HTMLDivElement;
+const closeAssignmentDetailsModalBtn = document.getElementById('close-assignment-details-modal-btn') as HTMLButtonElement;
+const incompleteAssignmentsList = document.getElementById('incomplete-assignments-list') as HTMLDivElement;
+const completedAssignmentsList = document.getElementById('completed-assignments-list') as HTMLDivElement;
+
+// Result Details Modal
+const resultDetailsModal = document.getElementById('result-details-modal') as HTMLDivElement;
+const closeResultDetailsModalBtn = document.getElementById('close-result-details-modal-btn') as HTMLButtonElement;
+const resultModalTitle = document.getElementById('result-modal-title') as HTMLHeadingElement;
+const resultModalDate = document.getElementById('result-modal-date') as HTMLParagraphElement;
+const resultPronunciationEl = document.getElementById('result-pronunciation') as HTMLParagraphElement;
+const resultFluencyEl = document.getElementById('result-fluency') as HTMLParagraphElement;
+const resultIntonationEl = document.getElementById('result-intonation') as HTMLParagraphElement;
 
 
 // Practice Section Elements
@@ -178,6 +204,7 @@ let isRecording = false;
 let isLoading = false;
 let currentUser: UserProfile | null = null;
 let isInitialProfileSetup = false;
+let voices: SpeechSynthesisVoice[] = [];
 
 // Test Mode State
 let isTestModeActive = false;
@@ -296,7 +323,7 @@ async function showApp(user: UserProfile) {
         adminLink.classList.add('hidden');
     }
 
-    loadAssignments(user);
+    loadInitialAssignmentData(user);
 }
 
 function setLoading(isLoadingState: boolean) {
@@ -393,8 +420,7 @@ function displayResults(result: any, originalSentence: string) {
 }
 
 // --- Gemini API ---
-const API_KEY = import.meta.env.VITE_API_KEY;
-const ai = new GoogleGenAI({ apiKey: API_KEY });
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 async function evaluatePronunciation(audioBase64: string, sentence: string): Promise<any> {
     setLoading(true);
@@ -554,16 +580,29 @@ function updateRecordButtonState() {
 }
 
 // --- Text-to-Speech ---
+function populateVoiceList() {
+    if (typeof speechSynthesis === 'undefined') return;
+    voices = speechSynthesis.getVoices();
+}
+
 function playModelAudio(text: string) {
     if ('speechSynthesis' in window) {
         const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'en-US';
+        
+        const usVoice = voices.find(voice => voice.lang === 'en-US' && !voice.name.includes('Google 日本語'));
+        if (usVoice) {
+            utterance.voice = usVoice;
+        } else {
+            utterance.lang = 'en-US';
+        }
+        
         utterance.rate = 0.9;
         window.speechSynthesis.speak(utterance);
     } else {
         alert("お使いのブラウザは音声合成に対応していません。");
     }
 }
+
 
 // --- Sentence Selection Modal ---
 let FACTBOOK_DATA: FactbookChapter[] = [];
@@ -759,7 +798,7 @@ async function endTest() {
     practiceSection.classList.remove('hidden');
     assignmentsSection.classList.remove('hidden');
     if (currentUser) {
-        loadAssignments(currentUser); // Reload assignments
+        loadInitialAssignmentData(currentUser); // Reload assignments
     }
     testSection.classList.add('hidden');
     resultsSection.classList.add('hidden');
@@ -936,13 +975,22 @@ const api = {
                     description: data.description,
                     questions: data.questions,
                     assignedClasses: data.assignedClasses,
+                    retakePolicy: data.retakePolicy,
+                    updatedAt: data.updatedAt,
                 };
             });
+            // Sort by updatedAt descending
+            assignmentList.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
             return assignmentList as Assignment[];
         } catch (error) {
             console.error("Error fetching assignments from Firestore:", error);
             throw error;
         }
+    },
+    
+    async getTestResultsForStudent(email: string): Promise<TestResultFromDB[]> {
+        const snapshot = await db.collection('testResults').where('studentEmail', '==', email).get();
+        return snapshot.docs.map(doc => doc.data() as TestResultFromDB);
     },
 
     async submitTestResult(resultData: any): Promise<{success: boolean}> {
@@ -957,39 +1005,133 @@ const api = {
     }
 };
 
-async function loadAssignments(user: UserProfile) {
+async function loadInitialAssignmentData(user: UserProfile) {
     if (!user || user.role !== 'student' || !user.grade || !user.class) {
         assignmentsSection.classList.add('hidden');
         return;
     }
-
     assignmentsSection.classList.remove('hidden');
-    assignmentsList.innerHTML = '<div class="assignment-item loading">課題を読み込んでいます...</div>';
 
     try {
-        const assignments = await api.getAssignments(user);
-        assignmentsList.innerHTML = ''; // Clear loading
+        const [assignments, results] = await Promise.all([
+            api.getAssignments(user),
+            api.getTestResultsForStudent(user.email)
+        ]);
 
-        if (assignments.length === 0) {
-            assignmentsList.innerHTML = '<div class="assignment-item">現在、新しい課題はありません。</div>';
-            return;
-        }
-
-        assignments.forEach(assignment => {
-            const item = document.createElement('div');
-            item.className = 'assignment-item';
-            item.innerHTML = `<h3>${assignment.title}</h3><p>${assignment.description}</p>`;
-            item.onclick = () => {
-                startTest(assignment.questions, assignment.title);
-            };
-            assignmentsList.appendChild(item);
+        const completedTestTitles = new Set(results.map(r => r.testTitle));
+        const incompleteAssignments = assignments.filter(a => {
+            const isOnceAndCompleted = a.retakePolicy === 'once' && completedTestTitles.has(a.title);
+            return !isOnceAndCompleted;
         });
 
+        if (incompleteAssignments.length > 0) {
+            newAssignmentsBadge.textContent = incompleteAssignments.length.toString();
+            newAssignmentsBadge.classList.remove('hidden');
+        } else {
+            newAssignmentsBadge.classList.add('hidden');
+        }
     } catch (error) {
-        console.error("Failed to load assignments:", error);
-        assignmentsList.innerHTML = '<div class="assignment-item">課題の読み込みに失敗しました。</div>';
+        console.error("Failed to load initial assignment data:", error);
+        const p = openAssignmentsBtn.querySelector('p');
+        if (p) p.textContent = "課題の読み込みに失敗しました";
     }
 }
+
+async function openAssignmentsModal() {
+    if (!currentUser) return;
+    
+    incompleteAssignmentsList.innerHTML = '<div class="assignment-item loading">課題を読み込んでいます...</div>';
+    completedAssignmentsList.innerHTML = '';
+    assignmentDetailsModal.classList.remove('hidden');
+
+    try {
+        const [assignments, results] = await Promise.all([
+            api.getAssignments(currentUser),
+            api.getTestResultsForStudent(currentUser.email)
+        ]);
+        
+        const resultsByTitle = new Map<string, TestResultFromDB>();
+        results.sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime());
+        results.forEach(r => {
+            if (!resultsByTitle.has(r.testTitle)) {
+                resultsByTitle.set(r.testTitle, r);
+            }
+        });
+
+        const incomplete: Assignment[] = [];
+        const completed: { assignment: Assignment, result: TestResultFromDB }[] = [];
+
+        assignments.forEach(assignment => {
+            const result = resultsByTitle.get(assignment.title);
+            const isOnce = assignment.retakePolicy === 'once';
+            
+            if (result) {
+                completed.push({ assignment, result });
+            }
+            if (!isOnce || !result) {
+                incomplete.push(assignment);
+            }
+        });
+
+        // Render Incomplete Assignments
+        incompleteAssignmentsList.innerHTML = '';
+        if (incomplete.length > 0) {
+            incomplete.forEach(assignment => {
+                const item = document.createElement('div');
+                item.className = 'assignment-item';
+                let descriptionHTML = `<p>${assignment.description}</p>`;
+                if (assignment.retakePolicy) {
+                    descriptionHTML += `<span class="retake-policy-badge">${assignment.retakePolicy === 'once' ? '1回のみ' : '何度でも'}</span>`;
+                }
+                item.innerHTML = `<h3>${assignment.title}</h3>${descriptionHTML}`;
+                item.onclick = () => {
+                    startTest(assignment.questions, assignment.title);
+                    assignmentDetailsModal.classList.add('hidden');
+                };
+                incompleteAssignmentsList.appendChild(item);
+            });
+        } else {
+            incompleteAssignmentsList.innerHTML = '<div class="assignment-item">未完了の課題はありません。</div>';
+        }
+
+        // Render Completed Assignments
+        completedAssignmentsList.innerHTML = '';
+        if (completed.length > 0) {
+            completed.sort((a, b) => new Date(b.result.completedAt).getTime() - new Date(a.result.completedAt).getTime());
+            completed.forEach(({ assignment, result }) => {
+                const item = document.createElement('div');
+                item.className = 'assignment-item completed-item';
+                const totalScore = result.scores.pronunciation + result.scores.fluency + result.scores.intonation;
+                item.innerHTML = `
+                    <h3>${assignment.title}</h3>
+                    <p>${assignment.description}</p>
+                    <div class="assignment-result-info">
+                        <span>受験日: ${new Date(result.completedAt).toLocaleDateString()}</span>
+                        <span class="score">総合スコア: ${totalScore.toFixed(1)}/30</span>
+                    </div>
+                `;
+                item.onclick = () => showResultDetails(result);
+                completedAssignmentsList.appendChild(item);
+            });
+        } else {
+            completedAssignmentsList.innerHTML = '<div class="assignment-item">完了済みの課題はありません。</div>';
+        }
+
+    } catch (error) {
+        console.error("Failed to populate assignments modal:", error);
+        incompleteAssignmentsList.innerHTML = '<div class="assignment-item error">課題の読み込みに失敗しました。</div>';
+    }
+}
+
+function showResultDetails(result: TestResultFromDB) {
+    resultModalTitle.textContent = result.testTitle;
+    resultModalDate.textContent = `受験日時: ${new Date(result.completedAt).toLocaleString('ja-JP')}`;
+    resultPronunciationEl.textContent = `${(result.scores.pronunciation || 0).toFixed(1)}/10`;
+    resultFluencyEl.textContent = `${(result.scores.fluency || 0).toFixed(1)}/10`;
+    resultIntonationEl.textContent = `${(result.scores.intonation || 0).toFixed(1)}/10`;
+    resultDetailsModal.classList.remove('hidden');
+}
+
 
 function showToast(message: string, type: 'success' | 'error' = 'success') {
     toastNotification.textContent = message;
@@ -1020,6 +1162,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     populateSentenceModal();
     setupTestModal();
+    
+    populateVoiceList();
+    if (typeof speechSynthesis !== 'undefined' && speechSynthesis.onvoiceschanged !== undefined) {
+        speechSynthesis.onvoiceschanged = populateVoiceList;
+    }
     
     signOutBtn.addEventListener('click', signOut);
     userProfileEl.addEventListener('click', (e) => {
@@ -1186,6 +1333,12 @@ document.addEventListener('DOMContentLoaded', () => {
     closeProfileModalBtn.addEventListener('click', closeProfileModal);
     roleRadios.forEach(radio => radio.addEventListener('change', toggleStudentFields));
 
+    // Assignment Modal Listeners
+    openAssignmentsBtn.addEventListener('click', openAssignmentsModal);
+    closeAssignmentDetailsModalBtn.addEventListener('click', () => assignmentDetailsModal.classList.add('hidden'));
+    closeResultDetailsModalBtn.addEventListener('click', () => resultDetailsModal.classList.add('hidden'));
+
+
     // Close modal on outside click
     window.addEventListener('click', (event) => {
         if (event.target === sentenceModal) {
@@ -1199,6 +1352,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (event.target === profileModal) {
             closeProfileModal();
+        }
+        if (event.target === assignmentDetailsModal) {
+            assignmentDetailsModal.classList.add('hidden');
+        }
+        if (event.target === resultDetailsModal) {
+            resultDetailsModal.classList.add('hidden');
         }
     });
 });

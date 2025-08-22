@@ -1,5 +1,6 @@
 
 
+
 /* Basic Reset & Font */
 :root {
     --bg-color: #1A1C2C;
@@ -196,10 +197,45 @@ h1, h2, h3, h4 {
     padding-top: 1.5rem;
 }
 
-.assignments-section h2 {
+.card-link {
+    background-color: var(--card-bg-solid);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    position: relative;
     text-align: center;
-    margin-top: 0;
-    margin-bottom: 1rem;
+}
+.card-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: var(--gradient-1);
+    transform: translateY(-2px);
+}
+.card-link h2 { margin: 0; }
+.card-link p { margin: 0.5rem 0 0; color: var(--text-light-color); }
+
+.badge {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background-color: var(--score-low);
+    color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+.assignments-list-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
 }
 
 #assignments-list {
@@ -215,6 +251,7 @@ h1, h2, h3, h4 {
     padding: 1rem 1.25rem;
     cursor: pointer;
     transition: all 0.2s ease-in-out;
+    position: relative;
 }
 
 .assignment-item:hover {
@@ -227,6 +264,7 @@ h1, h2, h3, h4 {
     margin: 0;
     font-size: 1.1rem;
     color: var(--text-color);
+    padding-right: 60px; /* Space for badge */
 }
 
 .assignment-item p {
@@ -244,6 +282,66 @@ h1, h2, h3, h4 {
 .assignment-item.loading:hover {
     transform: none;
     border-color: var(--border-color);
+}
+
+.assignment-item.completed {
+    background-color: rgba(0,0,0,0.1);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.assignment-item.completed-item {
+    opacity: 0.7;
+}
+
+.assignment-item.completed-item:hover {
+    opacity: 1;
+}
+
+
+.assignment-item.completed:hover {
+    transform: none;
+    border-color: var(--border-color);
+    background-color: rgba(0,0,0,0.1);
+}
+
+.assignment-item.completed::after {
+    content: '受験済み';
+    position: absolute;
+    top: 1rem;
+    right: 1.25rem;
+    background-color: var(--gradient-1);
+    color: white;
+    font-size: 0.8rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 10px;
+    font-weight: 500;
+}
+
+.retake-policy-badge {
+    display: inline-block;
+    background-color: rgba(0,0,0,0.2);
+    color: var(--text-light-color);
+    font-size: 0.8rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 10px;
+    margin-top: 0.5rem;
+}
+
+.assignment-result-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.75rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-color);
+    font-size: 0.85rem;
+    color: var(--text-light-color);
+}
+.assignment-result-info .score {
+    font-weight: bold;
+    color: var(--text-color);
+    font-size: 1rem;
 }
 
 
@@ -587,7 +685,7 @@ h1, h2, h3, h4 {
     padding-bottom: 1rem;
 }
 
-.modal-header h3 {
+.modal-header h3, .modal-header h4 {
     margin: 0;
     font-size: 1.2rem;
 }
@@ -649,6 +747,13 @@ h1, h2, h3, h4 {
     overflow-y: auto;
     padding: 1rem 0.5rem;
 }
+.modal-divider {
+    border: none;
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 1.5rem 0;
+}
+
 
 /* Scrollbar styling for modal */
 .modal-body::-webkit-scrollbar {

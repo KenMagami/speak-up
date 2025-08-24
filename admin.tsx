@@ -1,6 +1,7 @@
 
 
 
+
 import { db, auth } from "./firebase";
 import { factbookContentData, myWayContentData } from "./data";
 
@@ -72,6 +73,14 @@ const signOutBtn = document.getElementById('signout-btn') as HTMLButtonElement;
 // Navigation
 const navLinks = document.querySelectorAll('.nav-link');
 const contentViews = document.querySelectorAll('.content-view');
+
+// Dashboard View
+const totalStudentsStat = document.getElementById('total-students-stat') as HTMLParagraphElement;
+const totalAssignmentsStat = document.getElementById('total-assignments-stat') as HTMLParagraphElement;
+const todaySubmissionsStat = document.getElementById('today-submissions-stat') as HTMLParagraphElement;
+const recentSubmissionsTableBody = document.querySelector('#recent-submissions-table tbody') as HTMLTableSectionElement;
+const dashboardLoader = document.getElementById('dashboard-loader') as HTMLDivElement;
+
 
 // Assignments View
 const assignmentsTableBody = document.querySelector('#assignments-table tbody') as HTMLTableSectionElement;
@@ -206,6 +215,7 @@ async function navigateTo(viewId: string) {
     contentViews.forEach(view => view.classList.toggle('active', view.id === `${viewId}-view`));
     navLinks.forEach(link => link.classList.toggle('active', link.getAttribute('data-view') === viewId));
 
+    if (viewId === 'dashboard') await loadDashboardData();
     if (viewId === 'assignments') await loadAssignments();
     if (viewId === 'results') await loadAndDisplayResults();
     if (viewId === 'users') await loadUsers();
@@ -221,6 +231,60 @@ function showToast(message: string, type: 'success' | 'error' = 'success', durat
 
 
 // --- Data Fetching and Display ---
+async function loadDashboardData() {
+    dashboardLoader.classList.remove('hidden');
+    recentSubmissionsTableBody.innerHTML = '';
+    totalStudentsStat.textContent = '-';
+    totalAssignmentsStat.textContent = '-';
+    todaySubmissionsStat.textContent = '-';
+
+    try {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Set to start of today in local timezone
+
+        const usersQuery = db.collection('users').where('role', '==', 'student').get();
+        const assignmentsQuery = db.collection('assignments').get();
+        const todaySubmissionsQuery = db.collection('testResults').where('completedAt', '>=', today.toISOString()).get();
+        const recentSubmissionsQuery = db.collection('testResults').orderBy('completedAt', 'desc').limit(5).get();
+
+        const [
+            usersSnapshot,
+            assignmentsSnapshot,
+            todaySubmissionsSnapshot,
+            recentSubmissionsSnapshot
+        ] = await Promise.all([usersQuery, assignmentsQuery, todaySubmissionsQuery, recentSubmissionsQuery]);
+        
+        // Update stats
+        totalStudentsStat.textContent = usersSnapshot.size.toString();
+        totalAssignmentsStat.textContent = assignmentsSnapshot.size.toString();
+        todaySubmissionsStat.textContent = todaySubmissionsSnapshot.size.toString();
+
+        // Populate recent submissions table
+        if (recentSubmissionsSnapshot.empty) {
+            recentSubmissionsTableBody.innerHTML = '<tr><td colspan="4">最近提出されたテストはありません。</td></tr>';
+        } else {
+            recentSubmissionsSnapshot.docs.forEach(doc => {
+                const result = doc.data() as TestResult;
+                const totalScore = (result.scores.pronunciation || 0) + (result.scores.fluency || 0) + (result.scores.intonation || 0);
+                const row = recentSubmissionsTableBody.insertRow();
+                row.innerHTML = `
+                    <td>${result.studentName}</td>
+                    <td>${result.testTitle}</td>
+                    <td>${totalScore.toFixed(1)} / 30</td>
+                    <td>${new Date(result.completedAt).toLocaleString('ja-JP')}</td>
+                `;
+            });
+        }
+
+    } catch (error) {
+        console.error("Error loading dashboard data:", error);
+        showToast('ダッシュボードデータの読み込みに失敗しました。', 'error');
+        recentSubmissionsTableBody.innerHTML = '<tr><td colspan="4">データの読み込みに失敗しました。</td></tr>';
+    } finally {
+        dashboardLoader.classList.add('hidden');
+    }
+}
+
 async function deleteAssignment(id: string, title: string) {
     if (!confirm(`課題「${title}」を本当に削除しますか？この操作は元に戻せません。`)) {
         return;

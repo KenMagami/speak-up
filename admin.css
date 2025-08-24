@@ -137,6 +137,10 @@ body {
     color: white;
     font-weight: 500;
 }
+.nav-link svg {
+    width: 20px;
+    height: 20px;
+}
 
 .sidebar-footer {
     display: flex;
@@ -211,6 +215,55 @@ body {
     border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 1.5rem;
+}
+
+/* Dashboard */
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.summary-card {
+    background-color: var(--card-bg-solid);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.summary-card h4 {
+    margin: 0 0 0.5rem;
+    color: var(--text-light-color);
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.summary-card p {
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.summary-card .icon-bg {
+    position: absolute;
+    right: -15px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+.summary-card .icon-bg svg {
+    width: 80px;
+    height: 80px;
+    color: rgba(255, 255, 255, 0.05);
+}
+
+.recent-submissions h3 {
+    margin: 0 0 1rem;
+    font-size: 1.2rem;
 }
 
 /* Buttons */

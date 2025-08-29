@@ -414,3 +414,28 @@ body::-webkit-scrollbar, .container::-webkit-scrollbar {
     font-size: 0.85rem;
     color: var(--text-muted);
 }
+
+/* Coming Soon Card Styles */
+.app-card.coming-soon {
+    opacity: 0.6;
+    cursor: not-allowed;
+    filter: grayscale(50%);
+}
+
+.app-card.coming-soon:hover {
+    box-shadow: var(--shadow-soft);
+    transform: none;
+}
+
+.button-primary:disabled,
+.button-primary[disabled] {
+    background: var(--text-muted) !important;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.button-primary:disabled:hover,
+.button-primary[disabled]:hover {
+    transform: none;
+    box-shadow: none;
+}

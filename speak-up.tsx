@@ -1,4 +1,5 @@
 
+
 import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
 import { db } from "./firebase"; // Import the initialized db instance
 import { collection, doc, getDoc, getDocs, setDoc, updateDoc, query, where, addDoc } from "firebase/firestore";

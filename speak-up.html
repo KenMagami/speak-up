@@ -1,0 +1,267 @@
+
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speak up! - English Pronunciation Coach</title>
+    <link rel="stylesheet" href="speak-up.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://esm.sh/@google/genai@^1.15.0",
+    "vite": "https://esm.sh/vite@^7.1.3",
+    "firebase/": "https://esm.sh/firebase@^12.1.0/",
+    "path": "https://esm.sh/path@^0.12.7"
+  }
+}
+</script>
+</head>
+<body>
+    <main id="app">
+        <a href="/index.html" class="back-to-hub-btn">← Hubに戻る</a>
+        <div id="user-profile" class="hidden">
+             <a href="admin.html" id="admin-link" class="hidden">管理者用ページ</a>
+             <span id="user-name"></span>
+             <img id="user-avatar" src="" alt="User Avatar">
+             <button id="signout-btn">サインアウト</button>
+        </div>
+        <header class="app-header">
+            <h1>Speak up!</h1>
+            <p class="description">Your Personal AI English Pronunciation Coach</p>
+        </header>
+
+        <section id="assignments-section" class="assignments-section hidden">
+            <h2>先生からの課題</h2>
+            <div id="assignments-list">
+                <!-- Assignments will be populated here -->
+            </div>
+        </section>
+        
+        <section id="practice-section" class="practice-section">
+             <h2>フリートーク練習</h2>
+            <div id="sentence-container">
+                 <textarea id="sentence-input" placeholder="ここに評価したい英文を入力するか、下のボタンから選んでください..."></textarea>
+                 <button id="clear-sentence-btn" class="clear-btn hidden" aria-label="テキストを消去">&times;</button>
+            </div>
+            <div class="controls">
+                <button id="record-btn" aria-label="録音を開始" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>
+                </button>
+                <button id="play-model-btn" aria-label="お手本の音声を聞く" disabled>
+                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+                </button>
+            </div>
+            <div class="main-actions">
+                <button id="select-sentence-btn" class="select-sentence-btn">例文を選ぶ</button>
+                <button id="start-test-btn" class="select-sentence-btn">テストモード</button>
+            </div>
+        </section>
+
+        <section id="test-section" class="practice-section hidden">
+            <div class="test-header">
+                <h3>テストモード</h3>
+                <p id="test-progress">問題 1 / 10</p>
+            </div>
+            <div id="test-sentence-display" class="test-sentence-box"></div>
+            <div class="controls">
+                 <button id="test-record-btn" aria-label="録音を開始">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>
+                </button>
+                <button id="test-play-model-btn" aria-label="お手本の音声を聞く">
+                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+                </button>
+            </div>
+            <div class="test-actions">
+                 <button id="next-question-btn" class="select-sentence-btn hidden">次の問題へ</button>
+                 <button id="end-test-btn" class="select-sentence-btn danger">テストを終了</button>
+            </div>
+        </section>
+        
+        <section id="results-section" class="hidden">
+            <h2>Results (評価結果)</h2>
+            <div id="loader" class="hidden">
+                <div class="spinner"></div>
+                <p>AIがあなたのスピーチを評価中です...</p>
+            </div>
+            <div id="results-content">
+                <div class="scores-grid">
+                    <div class="score-card">
+                        <h3>Pronunciation<span class="ja-label">(発音の正確さ)</span></h3>
+                         <div class="score-display">
+                            <div class="score-gauge-container">
+                                <div id="pronunciation-gauge" class="score-gauge-bar"></div>
+                            </div>
+                            <p id="pronunciation-score" class="score-value">0/10</p>
+                        </div>
+                    </div>
+                    <div class="score-card">
+                        <h3>Fluency<span class="ja-label">(流暢さ)</span></h3>
+                         <div class="score-display">
+                            <div class="score-gauge-container">
+                                <div id="fluency-gauge" class="score-gauge-bar"></div>
+                            </div>
+                            <p id="fluency-score" class="score-value">0/10</p>
+                        </div>
+                    </div>
+                    <div class="score-card">
+                        <h3>Intonation<span class="ja-label">(イントネーション)</span></h3>
+                         <div class="score-display">
+                            <div class="score-gauge-container">
+                                <div id="intonation-gauge" class="score-gauge-bar"></div>
+                            </div>
+                            <p id="intonation-score" class="score-value">0/10</p>
+                        </div>
+                    </div>
+                </div>
+                <div id="overall-score-display" class="feedback-card">
+                    <h3>Overall Score (総合評価)</h3>
+                    <div class="circular-progress-container">
+                      <svg class="circular-progress" viewBox="0 0 120 120">
+                        <circle class="progress-bg" cx="60" cy="60" r="54" />
+                        <circle id="overall-progress-circle" class="progress-bar" cx="60" cy="60" r="54" />
+                      </svg>
+                      <div class="score-text-container">
+                          <span id="overall-score-value">0</span>
+                          <span class="score-text-unit">/ 30</span>
+                      </div>
+                    </div>
+                </div>
+                 <div class="feedback-card">
+                    <h3>Transcription (書き起こし)</h3>
+                    <div id="transcription-text" class="transcription-container"></div>
+                </div>
+                <div class="feedback-card">
+                    <h3>Advice (アドバイス)</h3>
+                    <p id="advice-text"></p>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <div id="sentence-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>例文を選択</h3>
+                <button id="close-sentence-modal-btn" class="modal-close-btn" aria-label="閉じる">&times;</button>
+            </div>
+            <div class="modal-tabs">
+                <button class="modal-tab-btn active" data-tab="factbook">FACTBOOK</button>
+                <button class="modal-tab-btn" data-tab="myway">MY WAY</button>
+            </div>
+            <div class="modal-body">
+                <div id="factbook-content" class="modal-tab-content active">
+                    <div id="factbook-list"></div>
+                </div>
+                <div id="myway-content" class="modal-tab-content">
+                    <div id="myway-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="test-setup-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>テスト設定</h3>
+                <button id="close-test-setup-modal-btn" class="modal-close-btn" aria-label="閉じる">&times;</button>
+            </div>
+            <div class="modal-tabs">
+                <button class="modal-tab-btn active" data-tab="factbook-test">FACTBOOK</button>
+                <button class="modal-tab-btn" data-tab="myway-test">MY WAY</button>
+            </div>
+            <div class="modal-body">
+                <div id="factbook-test-content" class="modal-tab-content active">
+                    <h4>1. テスト範囲の章を選択 (複数可)</h4>
+                    <div id="factbook-chapter-list" class="test-selection-list"></div>
+                    <h4>2. 問題数を選択</h4>
+                    <div class="question-count-container">
+                        <label for="factbook-question-count">問題数:</label>
+                        <input type="number" id="factbook-question-count" value="10" min="1" max="50" class="question-count-input">
+                    </div>
+                    <button id="start-factbook-test-btn" class="modal-action-btn">テスト開始</button>
+                </div>
+                <div id="myway-test-content" class="modal-tab-content">
+                     <h4>テストするセクションを選択 (1つ)</h4>
+                     <div id="myway-section-list" class="test-selection-list"></div>
+                     <button id="start-myway-test-btn" class="modal-action-btn">テスト開始</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="test-summary-modal" class="modal hidden">
+        <div class="modal-content" style="max-width: 500px;">
+             <div class="modal-header">
+                <h3>テスト結果</h3>
+                <button id="close-summary-modal-btn" class="modal-close-btn" aria-label="閉じる">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="summary-intro">テストお疲れ様でした！今回の平均スコアです。</p>
+                <div id="summary-scores" class="scores-grid">
+                     <div class="score-card">
+                        <h3>Pronunciation</h3>
+                        <p id="summary-pronunciation" class="summary-score-value">0/10</p>
+                    </div>
+                     <div class="score-card">
+                        <h3>Fluency</h3>
+                        <p id="summary-fluency" class="summary-score-value">0/10</p>
+                    </div>
+                     <div class="score-card">
+                        <h3>Intonation</h3>
+                        <p id="summary-intonation" class="summary-score-value">0/10</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="profile-modal" class="modal hidden">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3 id="profile-modal-title">プロフィール設定</h3>
+                <button id="close-profile-modal-btn" class="modal-close-btn hidden" aria-label="閉じる">&times;</button>
+            </div>
+            <form id="profile-form">
+                <div class="modal-body">
+                    <p id="profile-modal-intro">最初に学年、クラス、出席番号を登録してください。</p>
+                    <div id="role-selection-group" class="form-group">
+                        <label>役割を選択してください</label>
+                        <div class="role-selector">
+                            <input type="radio" id="role-student" name="user-role" value="student" checked>
+                            <label for="role-student">生徒</label>
+                            <input type="radio" id="role-teacher" name="user-role" value="teacher">
+                            <label for="role-teacher">教員</label>
+                        </div>
+                    </div>
+                    <div id="student-info-fields">
+                        <div class="form-group">
+                            <label for="user-grade">学年</label>
+                            <input type="number" id="user-grade" required min="1" max="6">
+                        </div>
+                        <div class="form-group">
+                            <label for="user-class">クラス</label>
+                            <input type="number" id="user-class" required min="1" max="20">
+                        </div>
+                        <div class="form-group">
+                            <label for="user-student-number">出席番号</label>
+                            <input type="number" id="user-student-number" required min="1" max="99">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" id="save-profile-btn" class="button-primary">登録する</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast-notification" class="toast hidden"></div>
+
+    <script type="module" src="speak-up.tsx"></script>
+</body>
+</html>

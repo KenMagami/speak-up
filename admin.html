@@ -10,7 +10,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script type="importmap">
 {
   "imports": {
@@ -22,21 +21,15 @@
 </script>
 </head>
 <body>
-    <div id="login-screen">
-        <div class="login-box">
-            <h1>Speak up!</h1>
-            <p class="description">管理者用ページ</p>
-            <div id="google-signin-button"></div>
-            <p class="login-note">先生として登録されたアカウントでログインしてください。</p>
-        </div>
-    </div>
-
+    <div id="sidebar-overlay" class="sidebar-overlay hidden"></div>
     <div id="admin-app" class="hidden">
         <aside id="sidebar">
             <div class="sidebar-header">
                 <h2>Speak up!</h2>
                 <span>管理画面</span>
+                <button id="close-sidebar-btn" class="sidebar-close-btn" aria-label="メニューを閉じる">&times;</button>
             </div>
+            <a href="/index.html" class="back-to-hub-link">← Hubに戻る</a>
             <nav class="sidebar-nav">
                 <a href="#" class="nav-link active" data-view="dashboard">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
@@ -68,51 +61,89 @@
         </aside>
 
         <main id="main-content">
+            <button id="menu-toggle-btn" class="menu-toggle-btn" aria-label="メニューを開く">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+            </button>
             <!-- Dashboard View -->
             <section id="dashboard-view" class="content-view active">
                 <div class="view-header">
                     <h1>ダッシュボード</h1>
                 </div>
-                <div class="view-body">
-                    <div class="summary-grid">
-                        <div class="summary-card">
-                            <h4>総生徒数</h4>
-                            <p id="total-students-stat">-</p>
-                            <div class="icon-bg">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
-                            </div>
+                <div class="dashboard-grid">
+                    <!-- Major Metrics -->
+                    <div class="summary-card card">
+                        <div class="icon-container submissions">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
                         </div>
-                        <div class="summary-card">
-                            <h4>課題総数</h4>
-                            <p id="total-assignments-stat">-</p>
-                            <div class="icon-bg">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
-                            </div>
-                        </div>
-                        <div class="summary-card">
-                            <h4>本日提出されたテスト</h4>
-                            <p id="today-submissions-stat">-</p>
-                             <div class="icon-bg">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
-                            </div>
+                        <div class="text-container">
+                            <span class="label">本日の提出数</span>
+                            <p id="metric-submissions" class="value">--</p>
                         </div>
                     </div>
-                    <div class="card recent-submissions">
-                        <h3>最近提出されたテスト</h3>
-                        <table id="recent-submissions-table">
-                            <thead>
-                                <tr>
-                                    <th>生徒名</th>
-                                    <th>課題タイトル</th>
-                                    <th>総合スコア</th>
-                                    <th>提出日時</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Data will be populated by JS -->
-                            </tbody>
-                        </table>
-                        <div id="dashboard-loader" class="loader">読み込み中...</div>
+                    <div class="summary-card card">
+                        <div class="icon-container active-users">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                        </div>
+                        <div class="text-container">
+                            <span class="label">アクティブ生徒数 (週間)</span>
+                            <p id="metric-active-students" class="value">--</p>
+                        </div>
+                    </div>
+                    <div class="summary-card card">
+                        <div class="icon-container average-score">
+                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                        </div>
+                        <div class="text-container">
+                            <span class="label">平均スコア (直近50件)</span>
+                            <p id="metric-average-score" class="value">--</p>
+                        </div>
+                    </div>
+            
+                    <!-- Recent Activity -->
+                    <div class="card grid-span-2">
+                        <h2>最近のアクティビティ</h2>
+                        <ul id="activity-feed-list" class="activity-feed">
+                            <!-- JS will populate this -->
+                            <li class="loading-placeholder">データを読み込んでいます...</li>
+                        </ul>
+                    </div>
+            
+                    <!-- Class Performance -->
+                    <div class="card grid-span-3">
+                        <h2>クラス別パフォーマンス概観</h2>
+                        <div id="class-performance-chart" class="chart-container">
+                             <!-- JS will populate this -->
+                             <div class="loading-placeholder">データを読み込んでいます...</div>
+                        </div>
+                    </div>
+            
+                    <!-- Students Needing Attention -->
+                    <div class="card grid-span-2">
+                        <h2>特に注意が必要な生徒</h2>
+                        <p class="card-subtitle">総合スコア平均が低い上位5名</p>
+                        <ul id="struggling-students-list" class="simple-list">
+                             <!-- JS will populate this -->
+                             <li class="loading-placeholder">データを読み込んでいます...</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Quick Links -->
+                    <div class="card">
+                        <h2>クイックリンク</h2>
+                        <div class="quick-links">
+                            <a href="#" class="quick-link-btn" data-view="assignments">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+                                <span>課題管理へ</span>
+                            </a>
+                             <a href="#" class="quick-link-btn" data-view="results">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6h-6z"/></svg>
+                                <span>成績閲覧へ</span>
+                            </a>
+                             <a href="#" class="quick-link-btn" data-view="users">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                                <span>ユーザー管理へ</span>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -125,12 +156,16 @@
                 </div>
                 <div class="view-body">
                     <div class="card">
+                         <div class="filter-container">
+                            <input type="search" id="assignment-search-input" class="search-input" placeholder="課題タイトル、作成者で検索...">
+                        </div>
                         <table id="assignments-table">
                             <thead>
                                 <tr>
                                     <th>課題タイトル</th>
                                     <th>説明</th>
                                     <th>対象クラス</th>
+                                    <th>作成者</th>
                                     <th>問題数</th>
                                     <th>操作</th>
                                 </tr>
@@ -157,6 +192,8 @@
                             <select id="assignment-filter"></select>
                             <label for="class-filter">クラス:</label>
                             <select id="class-filter"></select>
+                            <label for="creator-filter">作成者:</label>
+                            <select id="creator-filter"></select>
                         </div>
                         <table id="results-table">
                             <thead>
@@ -189,15 +226,26 @@
                 </div>
                 <div class="view-body">
                     <div class="card">
+                         <div class="filter-container">
+                            <input type="search" id="user-search-input" class="search-input" placeholder="名前/メールで検索...">
+                            <select id="user-role-filter">
+                                <option value="all">すべての役割</option>
+                                <option value="student">生徒</option>
+                                <option value="teacher">教員</option>
+                            </select>
+                            <input type="number" id="user-grade-filter" class="search-input" placeholder="学年" style="width: 80px;">
+                            <input type="number" id="user-class-filter" class="search-input" placeholder="クラス" style="width: 80px;">
+                        </div>
                         <table id="users-table">
                             <thead>
                                 <tr>
-                                    <th>名前</th>
-                                    <th>メールアドレス</th>
-                                    <th>役割</th>
-                                    <th>学年</th>
-                                    <th>クラス</th>
-                                    <th>番号</th>
+                                    <th data-sort-key="name">名前 <span></span></th>
+                                    <th data-sort-key="email">メールアドレス <span></span></th>
+                                    <th data-sort-key="role">役割 <span></span></th>
+                                    <th data-sort-key="grade">学年 <span></span></th>
+                                    <th data-sort-key="class">クラス <span></span></th>
+                                    <th data-sort-key="studentNumber">番号 <span></span></th>
+                                    <th>操作</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -232,19 +280,6 @@
                         <label>対象クラス (1つ以上選択)</label>
                         <div class="checkbox-list" id="assignment-class-selection">
                              <!-- Class checkboxes will be populated here -->
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>受験回数</label>
-                        <div class="radio-group">
-                            <label>
-                                <input type="radio" name="retake-policy" value="once" checked>
-                                <span>1回のみ</span>
-                            </label>
-                            <label>
-                                <input type="radio" name="retake-policy" value="multiple">
-                                <span>何度でも</span>
-                            </label>
                         </div>
                     </div>
                     <div class="form-group">
@@ -286,6 +321,51 @@
                 </div>
                 <div class="modal-footer">
                     <button type="submit" id="execute-csv-download-btn" class="button-primary">ダウンロード</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+     <!-- User Edit Modal -->
+    <div id="user-edit-modal" class="modal hidden">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3 id="user-edit-modal-title">ユーザー情報の編集</h3>
+                <button id="close-user-edit-modal-btn" aria-label="閉じる">&times;</button>
+            </div>
+            <form id="user-edit-form">
+                <div class="modal-body">
+                    <p id="user-edit-email" class="user-edit-info"></p>
+                    <div class="form-group">
+                        <label for="user-edit-role">役割</label>
+                        <select id="user-edit-role" class="form-select">
+                            <option value="student">生徒</option>
+                            <option value="teacher">教員</option>
+                        </select>
+                    </div>
+                    <div id="admin-settings-edit" class="form-group hidden">
+                        <label class="checkbox-item-label" for="user-edit-is-admin">
+                            <input type="checkbox" id="user-edit-is-admin">
+                            <span>管理者権限 (ユーザーの編集・削除が可能になります)</span>
+                        </label>
+                    </div>
+                    <div id="student-info-fields-edit">
+                        <div class="form-group">
+                            <label for="user-edit-grade">学年</label>
+                            <input type="number" id="user-edit-grade" min="1" max="6">
+                        </div>
+                        <div class="form-group">
+                            <label for="user-edit-class">クラス</label>
+                            <input type="number" id="user-edit-class" min="1" max="20">
+                        </div>
+                        <div class="form-group">
+                            <label for="user-edit-student-number">出席番号</label>
+                            <input type="number" id="user-edit-student-number" min="1" max="99">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" id="save-user-btn" class="button-primary">更新する</button>
                 </div>
             </form>
         </div>

@@ -1,8 +1,9 @@
 {
   "requestFramePermissions": [
-    "microphone"
+    "microphone",
+    "camera"
   ],
-  "name": "Speak up!",
+  "name": "English Learning Hub",
   "description": "",
   "prompt": ""
 }

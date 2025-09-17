@@ -29,7 +29,7 @@
                 <span>管理画面</span>
                 <button id="close-sidebar-btn" class="sidebar-close-btn" aria-label="メニューを閉じる">&times;</button>
             </div>
-            <a href="/index.html" class="back-to-hub-link">← Hubに戻る</a>
+            <a href="speak-up.html" class="back-to-hub-link">← 生徒用画面に戻る</a>
             <nav class="sidebar-nav">
                 <a href="#" class="nav-link active" data-view="dashboard">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
@@ -283,7 +283,11 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>問題を選択</label>
+                        <label for="custom-sentences-input">任意の文章を追加 (1行に1文)</label>
+                        <textarea id="custom-sentences-input" rows="5" placeholder="例: This is a pen.&#10;I am a student."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>または、既存の例文から問題を選択</label>
                         <div class="sentence-selection-container" id="sentence-selection-container">
                             <!-- Sentences will be populated here -->
                             <div class="loader">例文データを読み込んでいます...</div>

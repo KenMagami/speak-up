@@ -111,6 +111,7 @@ const assignmentForm = document.getElementById('assignment-form') as HTMLFormEle
 const assignmentTitleInput = document.getElementById('assignment-title') as HTMLInputElement;
 const assignmentDescriptionInput = document.getElementById('assignment-description') as HTMLTextAreaElement;
 const assignmentClassSelection = document.getElementById('assignment-class-selection') as HTMLDivElement;
+const customSentencesInput = document.getElementById('custom-sentences-input') as HTMLTextAreaElement;
 const sentenceSelectionContainer = document.getElementById('sentence-selection-container') as HTMLDivElement;
 const saveAssignmentBtn = document.getElementById('save-assignment-btn') as HTMLButtonElement;
 
@@ -769,6 +770,7 @@ async function loadDashboardData() {
 async function openAssignmentModal(id?: string, data?: Assignment) {
     editingAssignmentId = id || null;
     assignmentForm.reset();
+    customSentencesInput.value = '';
     sentenceSelectionContainer.innerHTML = '<div>読み込み中...</div>';
     assignmentClassSelection.innerHTML = '<div>読み込み中...</div>';
     assignmentModal.classList.remove('hidden');
@@ -833,7 +835,6 @@ async function openAssignmentModal(id?: string, data?: Assignment) {
             }
         });
 
-        // FIX: Cast the result of querySelector to HTMLInputElement to access the 'checked' property.
         const masterCheckbox = header.querySelector<HTMLInputElement>('input[type="checkbox"]');
         masterCheckbox?.addEventListener('change', () => {
             const isChecked = masterCheckbox.checked;
@@ -886,7 +887,6 @@ async function openAssignmentModal(id?: string, data?: Assignment) {
                     }
                 });
                 
-                // FIX: Cast the result of querySelector to HTMLInputElement to access the 'checked' property.
                 const masterCheckbox = sectionHeader.querySelector<HTMLInputElement>('input[type="checkbox"]');
                 masterCheckbox?.addEventListener('change', () => {
                     const isChecked = masterCheckbox.checked;
@@ -905,7 +905,6 @@ async function openAssignmentModal(id?: string, data?: Assignment) {
                 }
             });
 
-            // FIX: Cast the result of querySelector to HTMLInputElement to access the 'checked' property.
             const masterCheckbox = header.querySelector<HTMLInputElement>('input[type="checkbox"]');
             masterCheckbox?.addEventListener('change', () => {
                 const isChecked = masterCheckbox.checked;
@@ -927,11 +926,24 @@ async function openAssignmentModal(id?: string, data?: Assignment) {
             if (checkbox) checkbox.checked = true;
         });
 
+        // Separate custom sentences from predefined ones
+        const allPredefinedSentences = new Set([
+            ...Object.values(factbookContentData).flatMap(c => c.sections.flatMap(s => s.sentences.map(sen => sen.en))),
+            ...Object.values(myWayContentData).flatMap(book => book.lessons.flatMap(l => l.sections.flatMap(s => s.sentences.map(sen => sen.en))))
+        ]);
+        
+        const customSentences: string[] = [];
         data.questions.forEach(q => {
-            const safeValue = q.replace(/"/g, '&quot;');
-            const checkbox = sentenceSelectionContainer.querySelector<HTMLInputElement>(`input[value="${safeValue}"]`);
-            if (checkbox) checkbox.checked = true;
+            if (allPredefinedSentences.has(q)) {
+                const safeValue = q.replace(/"/g, '&quot;');
+                const checkbox = sentenceSelectionContainer.querySelector<HTMLInputElement>(`input[value="${safeValue}"]`);
+                if (checkbox) checkbox.checked = true;
+            } else {
+                customSentences.push(q);
+            }
         });
+        customSentencesInput.value = customSentences.join('\n');
+
 
     } else {
         // Creating mode
@@ -948,10 +960,14 @@ async function handleSaveAssignment(event: SubmitEvent) {
     const description = assignmentDescriptionInput.value.trim();
     
     const assignedClasses = Array.from(document.querySelectorAll<HTMLInputElement>('#assignment-class-selection input:checked')).map(input => input.value);
-    const questions = Array.from(document.querySelectorAll<HTMLInputElement>('#sentence-selection-container input[name="questions"]:checked')).map(input => input.value);
+    
+    const selectedSentences = Array.from(document.querySelectorAll<HTMLInputElement>('#sentence-selection-container input[name="questions"]:checked')).map(input => input.value);
+    const customSentences = customSentencesInput.value.trim().split('\n').filter(line => line.trim() !== '');
+
+    const questions = [...new Set([...selectedSentences, ...customSentences])];
 
     if (!title || questions.length === 0 || assignedClasses.length === 0) {
-        showToast('タイトル、対象クラス、および1つ以上の問題を選択してください。', 'error');
+        showToast('タイトル、対象クラス、および1つ以上の問題（任意入力または選択）を入力してください。', 'error');
         return;
     }
 

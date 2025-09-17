@@ -1,5 +1,4 @@
 
-
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { GoogleGenAI, Type } from "@google/genai";
@@ -64,7 +63,7 @@ const eikenGradeDetails: { [key: string]: { [key: string]: { prompt: string; wor
     'Eメール問題': { prompt: "あなたは英検準2級のEメール問題作成AIです。以下の指示に厳密に従って、Eメールの本文のみを生成してください。\n\n指示：\n1. 友人からのEメールを想定し、本文の長さは80語程度にすること。\n2. 内容は日常生活に関する身近なトピックにすること。\n3. 読み手が返信で答えるべき質問を1つ含めること。\n4. 返信で質問をすべき対象となる箇所として、本文中に下線部を1つ設定すること。下線は<u>タグで囲むこと。\n\n重要：Eメールの本文（例: Hi [Name], から Your friend, [Name] まで）のみを厳密に出力し、前後の説明、挨拶、追加のテキストは一切含めないでください。", wordCount: "40-50", maxScore: 4 }
   },
   '3級': {
-    '意見論述問題': { prompt: "あなたは英検3級の意見論述問題（QUESTION）を作成するAIです。受験者が自分の考えとその理由を2つ答えやすいように、日常生活に関する基本的な質問文を1つ生成してください。質問のレベルは「Do you watch TV every day?」や「Where would you like to go this summer?」程度にしてください。重要：QUESTIONの英文のみを厳密に出力し、前後の説明や「QUESTION:」のような接頭辞は一切含めないでください。", wordCount: "25-35", maxScore: 4 },
+    '意見論述問題': { prompt: "あなたは英検3級の意見論述問題（QUESTION）を作成するAIです。受験者が自分の考えとその理由を２つ英文で書きなさい。日常会話に関する基本的な質問文を1つ生成してください。質問のレベルは「Do you watch TV every day?」や「Where would you like to go this summer?」程度にしてください。重要：QUESTIONの英文のみを厳密に出力し、前後の説明や「QUESTION:」のような接頭辞は一切含めないでください。", wordCount: "25-35", maxScore: 4 },
     'Eメール問題': { prompt: "あなたは英検3級のEメール問題作成AIです。以下の指示に厳密に従って、Eメールの本文のみを生成してください。\n\n指示：\n1. 友人からの簡単なEメールを想定し、本文の長さは30〜40語程度にすること。\n2. 内容は日常生活に関するものとすること。\n3. 読み手が返信で答えるべき質問を2つ含めること。\n4. 質問箇所には<u>タグで囲んで下線部を設定すること。\n\n重要：Eメールの本文（例: Hi [Name], から Your friend, [Name] まで）のみを厳密に出力し、前後の説明、挨拶、追加のテキストは一切含めないでください。", wordCount: "15-25", maxScore: 4 }
   }
 };
@@ -204,7 +203,11 @@ const ResultDisplay = ({ result, grade, questionType, maxScore }: { result: ApiR
   );
 };
 
-const EikenScreen = ({ handleNavigation, eikenGrade, setEikenGrade, eikenQuestionType, setEikenQuestionType, topic, setTopic, generateEikenTopic, scoreEikenEssay, isLoading, error, result, setResult, userInput, setUserInput, eikenPoints }: any) => {
+const EikenScreen = ({ handleNavigation, eikenGrade, setEikenGrade, eikenQuestionType, setEikenQuestionType, topic, setTopic, generateEikenTopic, handleImageImport, scoreEikenEssay, isLoading, error, result, setResult, userInput, setUserInput, eikenPoints }: any) => {
+  const [showImageUpload, setShowImageUpload] = React.useState(false);
+  const takePhotoInputRef = React.useRef<HTMLInputElement>(null);
+  const uploadImageInputRef = React.useRef<HTMLInputElement>(null);
+
   const wordCount = userInput.split(/\s+/).filter(Boolean).length;
   const targetWordCount = eikenGradeDetails[eikenGrade]?.[eikenQuestionType]?.wordCount || 'N/A';
   
@@ -228,6 +231,23 @@ const EikenScreen = ({ handleNavigation, eikenGrade, setEikenGrade, eikenQuestio
         setUserInput(initialText);
     }
   }, [topic, eikenGrade, eikenQuestionType, setUserInput]);
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (file) {
+          handleImageImport(file);
+          setShowImageUpload(false);
+      }
+      // Reset file input value to allow re-uploading the same file
+      event.target.value = '';
+  };
+
+  const handleTakePhoto = () => {
+    takePhotoInputRef.current?.click();
+  };
+  const handleUploadImage = () => {
+    uploadImageInputRef.current?.click();
+  };
   
   const isGrade3EmailQuestion = eikenGrade === '3級' && eikenQuestionType === 'Eメール問題';
   const isGradePre2EmailQuestion = eikenGrade === '準2級' && eikenQuestionType === 'Eメール問題';
@@ -272,10 +292,15 @@ const EikenScreen = ({ handleNavigation, eikenGrade, setEikenGrade, eikenQuestio
           "aria-label": "Select Eiken Question Type"
         },
           questionTypesForGrade.map(qType => e('option', { key: qType, value: qType }, qType))
-        ),
-        e('button', { className: 'btn btn-primary', onClick: generateEikenTopic, disabled: isLoading },
-          'お題を生成'
         )
+      ),
+      e('div', { className: 'topic-source-selector' },
+        e('button', { className: 'btn btn-primary', onClick: () => setShowImageUpload(prev => !prev), disabled: isLoading }, '問題を取り込む'),
+        e('button', { className: 'btn btn-primary', onClick: () => { generateEikenTopic(); setShowImageUpload(false); }, disabled: isLoading }, '問題を生成')
+      ),
+      showImageUpload && e('div', { className: 'image-upload-options' },
+          e('button', { className: 'btn btn-primary', onClick: handleTakePhoto }, '写真を撮る'),
+          e('button', { className: 'btn btn-primary', onClick: handleUploadImage }, '画像をアップロード'),
       ),
       isLoading && !topic && !result && e('div', { className: 'loading-spinner', role: 'status', "aria-label": "Loading topic" }),
       topic && e('div', { className: 'topic-card' }, 
@@ -340,7 +365,7 @@ const EikenScreen = ({ handleNavigation, eikenGrade, setEikenGrade, eikenQuestio
              e('p', { style: { fontWeight: 600, color: 'var(--text-primary)', fontSize: '1.1rem', marginBottom: '1.5rem' } }, topic),
              e('h3', { className: 'topic-section-title' }, 'POINTS'),
              e('div', { className: 'points-container' },
-                eikenPoints.map(point => e('div', { key: point, className: 'point-item' }, `・ ${point}`))
+                eikenPoints.map((point: string) => e('div', { key: point, className: 'point-item' }, `・ ${point}`))
              )
         ),
         isGrade2OpinionQuestion && e(React.Fragment, null,
@@ -387,7 +412,9 @@ const EikenScreen = ({ handleNavigation, eikenGrade, setEikenGrade, eikenQuestio
       ),
       isLoading && (result || topic) && e('div', { className: 'loading-spinner', role: 'status', "aria-label": "Loading result" }),
       error && e('p', { className: 'error-message' }, error),
-      result && e(ResultDisplay, { result, grade: eikenGrade, questionType: eikenQuestionType, maxScore: eikenGradeDetails[eikenGrade]?.[eikenQuestionType]?.maxScore })
+      result && e(ResultDisplay, { result, grade: eikenGrade, questionType: eikenQuestionType, maxScore: eikenGradeDetails[eikenGrade]?.[eikenQuestionType]?.maxScore }),
+      e('input', { ref: takePhotoInputRef, type: 'file', accept: 'image/*', capture: 'environment', className: 'hidden-file-input', onChange: handleFileChange }),
+      e('input', { ref: uploadImageInputRef, type: 'file', accept: 'image/*', className: 'hidden-file-input', onChange: handleFileChange })
     )
   );
 };
@@ -517,6 +544,54 @@ const App = () => {
     }
   };
   
+  const handleImageImport = async (file: File) => {
+    setIsLoading(true);
+    setError(null);
+    setTopic('');
+    setEikenPoints([]);
+    setResult(null);
+    setUserInput('');
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+        try {
+            const base64String = (reader.result as string).split(',')[1];
+            const imagePart = { inlineData: { mimeType: file.type, data: base64String } };
+
+            let promptText = `This is an image of an Eiken Grade ${eikenGrade}, type "${eikenQuestionType}" writing test problem. Please extract only the topic/passage text from this image. Output only the text itself, without any extra explanations or formatting.`;
+            let config = {};
+
+            if (eikenGrade === '準1級' && eikenQuestionType === '意見論述問題') {
+                promptText = `This is an image of an Eiken Grade Pre-1 writing test problem. Please extract the TOPIC and the 4 POINTS from this image. Output the result in a strict JSON format: {"topic": "...", "points": ["...", "...", "...", "..."]}. Do not include any other text.`;
+                config = { responseMimeType: "application/json" };
+            }
+
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.5-flash',
+                contents: { parts: [imagePart, { text: promptText }] },
+                config
+            });
+
+            const extractedText = response.text.trim();
+
+            if (eikenGrade === '準1級' && eikenQuestionType === '意見論述問題') {
+                const parsedResult = JSON.parse(extractedText);
+                setTopic(parsedResult.topic);
+                setEikenPoints(parsedResult.points);
+            } else {
+                setTopic(extractedText);
+            }
+
+        } catch (err) {
+            console.error("Error importing Eiken topic from image:", err);
+            setError("画像からのトピック読み込みに失敗しました。もう一度お試しください。");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    reader.readAsDataURL(file);
+  };
+
   const createPrompt = (template: string, replacements: { [key: string]: string | number }) => {
     return template.replace(/\{(\w+)\}/g, (placeholder, key) => {
         return replacements[key] !== undefined ? String(replacements[key]) : placeholder;
@@ -703,7 +778,7 @@ const App = () => {
   const renderScreen = () => {
     switch (currentView) {
       case 'eiken':
-        return e(EikenScreen, { handleNavigation, eikenGrade, setEikenGrade, eikenQuestionType, setEikenQuestionType, topic, setTopic, generateEikenTopic, scoreEikenEssay, isLoading, error, result, setResult, userInput, setUserInput, eikenPoints });
+        return e(EikenScreen, { handleNavigation, eikenGrade, setEikenGrade, eikenQuestionType, setEikenQuestionType, topic, setTopic, generateEikenTopic, handleImageImport, scoreEikenEssay, isLoading, error, result, setResult, userInput, setUserInput, eikenPoints });
       case 'freestyle':
         return e(FreestyleScreen, { handleNavigation, scoreFreestyleEssay, isLoading, error, result, userInput, setUserInput, setResult });
       case 'grammar':

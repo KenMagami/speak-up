@@ -474,6 +474,34 @@ textarea {
   border: 1px solid rgba(0, 246, 255, 0.2);
 }
 
+.topic-source-selector {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+}
+.topic-source-selector .btn {
+  flex: 1;
+  min-width: 180px;
+}
+.hidden-file-input {
+  display: none;
+}
+.image-upload-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  animation: fadeIn 0.3s ease-in-out;
+  border-top: 1px solid var(--border-color);
+  padding-top: 1.5rem;
+}
+.image-upload-options .btn {
+    width: 100%;
+}
+
+
 @media (max-width: 600px) {
     body {
         padding: 1rem 0.5rem;
